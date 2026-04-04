@@ -1,16 +1,71 @@
-# React + Vite
+# SplitFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple tool to track shared expenses and instantly calculate who owes what — without confusion or manual calculations.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Live Demo
+👉 https://your-vercel-link.vercel.app
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 💡 Problem
 
-## Expanding the ESLint configuration
+Splitting expenses in a group often leads to confusion:
+- Who paid more?
+- Who owes what?
+- How do we calculate it fairly?
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Most people end up doing manual calculations or using notes, which is slow and error-prone.
+
+---
+
+## ✅ Solution
+
+SplitFlow removes that friction by automatically calculating balances and giving clear insights into group expenses.
+
+---
+
+## ✨ Features
+
+- Add and track shared expenses  
+- Automatic balance calculation  
+- Clear breakdown of who owes and who should receive  
+- Quick insight into top payer and biggest debtor  
+- Simple and intuitive UI  
+
+---
+
+## 🧠 Key Concepts
+
+This project demonstrates:
+
+- State management with React  
+- Derived data (balances calculated from expenses)  
+- Dynamic UI updates based on user input  
+- LocalStorage persistence  
+- Clean component structure and reusable logic  
+
+---
+
+## 🛠 Tech Stack
+
+- React  
+- Tailwind CSS  
+- LocalStorage  
+
+---
+
+## 📸 Preview
+
+(Add a clean screenshot here)
+
+---
+
+## 📦 Installation
+
+```bash
+git clone https://github.com/your-username/splitflow.git
+cd splitflow
+npm install
+npm run dev
