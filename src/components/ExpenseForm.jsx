@@ -1,80 +1,70 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-export default function ExpenseForm({
-  members,
-  onAddExpense,
-  editIndex,
-  editData,
-}) {
-  const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
-  const [paidBy, setPaidBy] = useState("");
+export default function ExpenseForm({ members, onSubmit, editData, isEditing }) {
+  const [description, setDescription] = useState(editData?.description ?? "");
+  const [amount, setAmount] = useState(editData?.amount ?? "");
+  const [paidBy, setPaidBy] = useState(editData?.paidBy ?? members[0]);
 
-  // ✅ Fill form when editing
-  useEffect(() => {
-    if (editData) {
-      setTitle(editData.title);
-      setAmount(editData.amount);
-      setPaidBy(editData.paidBy);
-    }
-  }, [editData]);
+  const isValid = description.trim() !== "" && Number(amount) > 0 && paidBy;
 
-  function handleSubmit() {
-    if (!title || !amount || !paidBy) return;
-
-    const newExpense = {
-      title,
-      amount: Number(amount),
-      paidBy,
-    };
-
-    onAddExpense(newExpense);
-
-    setTitle("");
-    setAmount("");
-    setPaidBy("");
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!isValid) return;
+    onSubmit({ description, amount: Number(amount), paidBy });
   }
 
   return (
-    <div className="flex flex-col gap-4 w-80">
-      <h3 className="font-bold">
-        {editIndex !== null ? "Edit Expense" : "Add Expense"}
-      </h3>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <h2 className="text-lg font-semibold">
+        {isEditing ? "Edit Expense" : "Add Expense"}
+      </h2>
 
-      <input
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="border p-2"
-      />
+      <div>
+        <label className="text-sm text-gray-600">Description</label>
+        <input
+          type="text"
+          placeholder="e.g. Dinner, Transport..."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+        />
+      </div>
 
-      <input
-        type="number"
-        placeholder="Amount"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        className="border p-2"
-      />
+      <div>
+        <label className="text-sm text-gray-600">Amount</label>
+        <input
+          type="number"
+          placeholder="0.00"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+        />
+      </div>
 
-      <select
-        value={paidBy}
-        onChange={(e) => setPaidBy(e.target.value)}
-        className="border p-2"
-      >
-        <option value="">Select payer</option>
-        {members.map((m, i) => (
-          <option key={i} value={m}>
-            {m}
-          </option>
-        ))}
-      </select>
+      <div>
+        <label className="text-sm text-gray-600">Paid by</label>
+        <select
+          value={paidBy}
+          onChange={(e) => setPaidBy(e.target.value)}
+          className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+        >
+          {members.map((member) => (
+            <option key={member}>{member}</option>
+          ))}
+        </select>
+      </div>
 
       <button
-        onClick={handleSubmit}
-        className="bg-purple-600 text-white py-2"
+        type="submit"
+        disabled={!isValid}
+        className={`w-full py-3 rounded-xl font-medium transition ${
+          isValid
+            ? "bg-black text-white hover:opacity-90 active:scale-95"
+            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+        }`}
       >
-        {editIndex !== null ? "Update Expense" : "Add Expense"}
+        {isEditing ? "Update Expense" : "Add Expense"}
       </button>
-    </div>
+    </form>
   );
 }

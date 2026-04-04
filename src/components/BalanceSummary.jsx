@@ -1,37 +1,51 @@
 export default function BalanceSummary({ balances }) {
   if (!balances || Object.keys(balances).length === 0) {
     return (
-      <div className="text-gray-500 text-sm">
+      <div className="text-center text-gray-400 py-6">
         No balances yet
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-4 rounded shadow w-80">
-      <h3 className="font-bold mb-2">Balances</h3>
+    <div>
+      <h2 className="text-lg font-semibold mb-4">
+        Who owes what
+      </h2>
 
-      {Object.entries(balances).map(([person, balance]) => {
-        if (balance > 0) {
+      <div className="space-y-3">
+        {Object.entries(balances).map(([person, balance]) => {
+          const isPositive = balance > 0;
+          const isNegative = balance < 0;
+
           return (
-            <div key={person} className="text-green-600">
-              {person} should receive ${balance}
+            <div
+              key={person}
+              className="flex justify-between items-center p-3 rounded-lg border"
+            >
+              <p className="font-medium">{person}</p>
+
+              {isPositive && (
+                <p className="text-green-600 font-semibold">
+                  +${balance}
+                </p>
+              )}
+
+              {isNegative && (
+                <p className="text-red-600 font-semibold">
+                  -${Math.abs(balance)}
+                </p>
+              )}
+
+              {!isPositive && !isNegative && (
+                <p className="text-gray-400 text-sm">
+                  settled
+                </p>
+              )}
             </div>
           );
-        } else if (balance < 0) {
-          return (
-            <div key={person} className="text-red-600">
-              {person} owes ${Math.abs(balance)}
-            </div>
-          );
-        } else {
-          return (
-            <div key={person} className="text-gray-600">
-              {person} is settled
-            </div>
-          );
-        }
-      })}
+        })}
+      </div>
     </div>
   );
 }
