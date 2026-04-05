@@ -9,7 +9,6 @@ export default function Home() {
   const [editIndex, setEditIndex] = useState(null);
   const [groupName, setGroupName] = useState("");
   const [members, setMembers] = useState("");
-  const [toast, setToast] = useState(null);
 
   const [group, setGroup] = useState(() => {
     try {
@@ -38,8 +37,15 @@ export default function Home() {
     localStorage.setItem("expenses", JSON.stringify(expenses));
   }, [expenses]);
 
-  const balances = group ? calculateBalance(group.members, expenses) : null;
+  // ✅ Derived data (single source of truth)
+  const balances = group
+    ? calculateBalance(group.members, expenses)
+    : null;
+
   const settlements = balances ? settleBalances(balances) : [];
+
+  const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const share = group ? total / group.members.length : 0;
 
   const biggestCreditor = balances
     ? Object.entries(balances).sort((a, b) => b[1] - a[1])[0]
@@ -59,7 +65,7 @@ export default function Home() {
     if (totalOwed === 0) {
       summaryText = "Everyone is settled";
     } else if (biggestDebtor && biggestCreditor) {
-      summaryText = `${biggestDebtor[0]} owes the most ($${Math.abs(
+      summaryText = `${biggestDebtor[0]} owes the most (RON ${Math.abs(
         biggestDebtor[1]
       ).toFixed(2)})`;
     }
@@ -68,14 +74,30 @@ export default function Home() {
   function handleCreateGroup() {
     const membersArray = members
       .split(",")
-      .map((n) => n.trim())
-      .filter((n) => n !== "");
+      .map((name) => name.trim())
+      .filter((name) => name !== "");
 
-    if (!groupName.trim() || membersArray.length === 0) return;
+    const uniqueMembers = [...new Set(membersArray)];
 
-    setGroup({ name: groupName.trim(), members: membersArray });
+    if (uniqueMembers.length !== membersArray.length) {
+      alert("Duplicate member names are not allowed");
+      return;
+    }
+
+    if (uniqueMembers.length < 2) {
+      alert("At least 2 members required");
+      return;
+    }
+
+    const newGroup = {
+      name: groupName,
+      members: uniqueMembers,
+    };
+
+    setGroup(newGroup);
     setGroupName("");
     setMembers("");
+    setShowForm(false);
   }
 
   function handleExpenseSubmit(expense) {
@@ -96,10 +118,11 @@ export default function Home() {
     setExpenses(expenses.filter((_, i) => i !== index));
   }
 
+  // 🟡 Create Group Screen
   if (!group) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-xl shadow p-6 w-full max-w-md animate-fade-in">
+        <div className="bg-white rounded-xl shadow p-6 w-full max-w-md">
           <h1 className="text-xl font-bold mb-4">Create Group</h1>
 
           <input
@@ -120,7 +143,7 @@ export default function Home() {
 
           <button
             onClick={handleCreateGroup}
-            className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 active:scale-95 transition"
+            className="w-full bg-black text-white py-2 rounded"
           >
             Create Group
           </button>
@@ -129,18 +152,30 @@ export default function Home() {
     );
   }
 
+  // 🟢 Main App
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
 
-        <div className="bg-white p-4 rounded-xl shadow-sm animate-fade-in">
+        {/* Group Header */}
+        <div className="bg-white p-4 rounded-xl shadow-sm">
           <p className="text-xs text-gray-400 uppercase">Group</p>
           <h1 className="text-2xl font-bold">{group.name}</h1>
           <p className="text-sm text-gray-400">{group.members.join(", ")}</p>
+
+          {/* ✅ NEW SUMMARY BLOCK */}
+          <div className="bg-gray-50 p-3 rounded mt-3">
+            <p className="font-semibold">
+              Total: RON {Number(total).toFixed(2)}
+            </p>
+            <p className="text-sm text-gray-600">
+              Each person should pay: RON {Number(share).toFixed(2)}
+            </p>
+          </div>
         </div>
 
         {summaryText && (
-          <div className="bg-black text-white p-3 rounded-xl text-sm animate-fade-in">
+          <div className="bg-black text-white p-3 rounded-xl text-sm">
             {summaryText}
           </div>
         )}
@@ -150,13 +185,13 @@ export default function Home() {
             setShowForm(!showForm);
             setEditIndex(null);
           }}
-          className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 active:scale-95 transition"
+          className="bg-black text-white px-4 py-2 rounded"
         >
           {showForm ? "Cancel" : "+ Add Expense"}
         </button>
 
         {showForm && (
-          <div className="bg-white p-4 rounded-xl shadow-sm animate-fade-in">
+          <div className="bg-white p-4 rounded-xl shadow-sm">
             <ExpenseForm
               key={editIndex ?? "new"}
               members={group.members}
@@ -169,25 +204,16 @@ export default function Home() {
 
         {balances && <BalanceSummary balances={balances} />}
 
-        {balances && expenses.length > 0 && (
-          <div className="bg-white p-4 rounded-xl shadow-sm animate-fade-in">
-            <h3 className="font-semibold mb-2">Quick Insights</h3>
-            <p className="text-sm text-gray-600">
-              {biggestDebtor?.[0]} owes the most, while {biggestCreditor?.[0]} paid the most.
-            </p>
-          </div>
-        )}
-
+        {/* Expenses */}
         {expenses.length === 0 ? (
-          <div className="text-center py-8 animate-fade-in">
-            <div className="text-3xl mb-2">💸</div>
+          <div className="text-center py-8">
             <p>No expenses yet</p>
           </div>
         ) : (
           expenses.map((exp, i) => (
             <div
               key={i}
-              className="flex justify-between items-center bg-white px-4 py-3 rounded-xl shadow-sm mb-2 animate-fade-in hover:shadow-md transition"
+              className="flex justify-between items-center bg-white px-4 py-3 rounded-xl shadow-sm"
             >
               <div>
                 <p className="font-medium">{exp.description}</p>
@@ -197,7 +223,7 @@ export default function Home() {
               </div>
 
               <div className="flex items-center gap-3">
-                <span>${Number(exp.amount).toFixed(2)}</span>
+                <span>RON {Number(exp.amount).toFixed(2)}</span>
 
                 <button onClick={() => {
                   setEditIndex(i);
@@ -214,13 +240,14 @@ export default function Home() {
           ))
         )}
 
+        {/* Settlements */}
         {settlements.length > 0 && (
-          <div className="bg-white p-4 rounded-xl shadow-sm animate-fade-in">
+          <div className="bg-white p-4 rounded-xl shadow-sm">
             <h3 className="font-semibold mb-3">Settle Up</h3>
             {settlements.map((s, i) => (
               <div key={i} className="flex justify-between mb-2">
-                <span>{s.from} → {s.to}</span>
-                <span>${s.amount}</span>
+                <span>{s.from} pays {s.to}</span>
+                <span>RON {Number(s.amount).toFixed(2)}</span>
               </div>
             ))}
           </div>
