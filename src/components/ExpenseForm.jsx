@@ -14,39 +14,46 @@ export default function ExpenseForm({ members, onSubmit, editData, isEditing }) 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <h2 className="text-lg font-semibold">
-        {isEditing ? "Edit Expense" : "Add Expense"}
-      </h2>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+        {isEditing ? "Edit Expense" : "New Expense"}
+      </p>
 
       <div>
-        <label className="text-sm text-gray-600">Description</label>
+        <label className="block text-xs font-medium text-gray-500 mb-1.5">Description</label>
         <input
           type="text"
-          placeholder="e.g. Dinner, Transport..."
+          placeholder="Dinner, Taxi, Hotel..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+          className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black text-sm transition"
         />
       </div>
 
       <div>
-        <label className="text-sm text-gray-600">Amount</label>
-        <input
-          type="number"
-          placeholder="0.00"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-        />
+        <label className="block text-xs font-medium text-gray-500 mb-1.5">Amount</label>
+        <div className="relative">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">
+            $
+          </span>
+          <input
+            type="number"
+            placeholder="0.00"
+            min="0"
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="w-full pl-7 pr-3.5 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black text-sm transition"
+          />
+        </div>
       </div>
 
       <div>
-        <label className="text-sm text-gray-600">Paid by</label>
+        <label className="block text-xs font-medium text-gray-500 mb-1.5">Paid by</label>
         <select
           value={paidBy}
           onChange={(e) => setPaidBy(e.target.value)}
-          className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+          className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black text-sm transition bg-white"
         >
           {members.map((member) => (
             <option key={member}>{member}</option>
@@ -57,10 +64,10 @@ export default function ExpenseForm({ members, onSubmit, editData, isEditing }) 
       <button
         type="submit"
         disabled={!isValid}
-        className={`w-full py-3 rounded-xl font-medium transition ${
+        className={`w-full py-3 rounded-xl font-medium transition-all ${
           isValid
-            ? "bg-black text-white hover:opacity-90 active:scale-95"
-            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            ? "bg-black text-white hover:bg-gray-800 active:scale-[0.98]"
+            : "bg-gray-100 text-gray-400 cursor-not-allowed"
         }`}
       >
         {isEditing ? "Update Expense" : "Add Expense"}

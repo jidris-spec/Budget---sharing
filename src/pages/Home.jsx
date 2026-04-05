@@ -7,10 +7,9 @@ import ExpenseForm from "../components/ExpenseForm";
 export default function Home() {
   const [showForm, setShowForm] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
-
-  // Group creation inputs
   const [groupName, setGroupName] = useState("");
   const [members, setMembers] = useState("");
+  const [toast, setToast] = useState(null);
 
   const [group, setGroup] = useState(() => {
     try {
@@ -41,7 +40,6 @@ export default function Home() {
 
   const balances = group ? calculateBalance(group.members, expenses) : null;
   const settlements = balances ? settleBalances(balances) : [];
-  const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
   const biggestCreditor = balances
     ? Object.entries(balances).sort((a, b) => b[1] - a[1])[0]
@@ -51,16 +49,29 @@ export default function Home() {
     ? Object.entries(balances).sort((a, b) => a[1] - b[1])[0]
     : null;
 
+  let summaryText = "";
+
+  if (balances) {
+    const totalOwed = Object.values(balances)
+      .filter((b) => b < 0)
+      .reduce((sum, b) => sum + Math.abs(b), 0);
+
+    if (totalOwed === 0) {
+      summaryText = "Everyone is settled";
+    } else if (biggestDebtor && biggestCreditor) {
+      summaryText = `${biggestDebtor[0]} owes the most ($${Math.abs(
+        biggestDebtor[1]
+      ).toFixed(2)})`;
+    }
+  }
+
   function handleCreateGroup() {
     const membersArray = members
       .split(",")
       .map((n) => n.trim())
       .filter((n) => n !== "");
 
-    if (!groupName.trim() || membersArray.length === 0) {
-      alert("Enter a group name and at least one member");
-      return;
-    }
+    if (!groupName.trim() || membersArray.length === 0) return;
 
     setGroup({ name: groupName.trim(), members: membersArray });
     setGroupName("");
@@ -69,11 +80,15 @@ export default function Home() {
 
   function handleExpenseSubmit(expense) {
     if (editIndex !== null) {
-      setExpenses(expenses.map((e, i) => (i === editIndex ? expense : e)));
+      const updated = expenses.map((e, i) =>
+        i === editIndex ? expense : e
+      );
+      setExpenses(updated);
       setEditIndex(null);
     } else {
       setExpenses([...expenses, expense]);
     }
+
     setShowForm(false);
   }
 
@@ -81,43 +96,31 @@ export default function Home() {
     setExpenses(expenses.filter((_, i) => i !== index));
   }
 
-  // No group yet — show creation form
   if (!group) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-sm border p-8 w-full max-w-sm space-y-5">
-          <div>
-            <h1 className="text-2xl font-bold">SplitFlow</h1>
-            <p className="text-gray-500 text-sm mt-1">Create a group to get started</p>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-xl shadow p-6 w-full max-w-md animate-fade-in">
+          <h1 className="text-xl font-bold mb-4">Create Group</h1>
 
-          <div>
-            <label className="text-sm text-gray-600">Group name</label>
-            <input
-              type="text"
-              placeholder="e.g. Beach Trip"
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Group name"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            className="w-full mb-3 p-2 border rounded"
+          />
 
-          <div>
-            <label className="text-sm text-gray-600">
-              Members <span className="text-gray-400">(comma-separated)</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Alice, Bob, Carol"
-              value={members}
-              onChange={(e) => setMembers(e.target.value)}
-              className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Members (comma separated)"
+            value={members}
+            onChange={(e) => setMembers(e.target.value)}
+            className="w-full mb-4 p-2 border rounded"
+          />
 
           <button
             onClick={handleCreateGroup}
-            className="w-full bg-black text-white py-3 rounded-xl font-medium hover:opacity-90 active:scale-95 transition"
+            className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 active:scale-95 transition"
           >
             Create Group
           </button>
@@ -126,162 +129,103 @@ export default function Home() {
     );
   }
 
-  // Group exists — show main app
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-10">
-      {/* HEADER */}
-      <div className="max-w-6xl mx-auto mb-10 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">SplitFlow</h1>
-          <p className="text-gray-500 text-sm">Track shared expenses and balances instantly</p>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
+
+        <div className="bg-white p-4 rounded-xl shadow-sm animate-fade-in">
+          <p className="text-xs text-gray-400 uppercase">Group</p>
+          <h1 className="text-2xl font-bold">{group.name}</h1>
+          <p className="text-sm text-gray-400">{group.members.join(", ")}</p>
         </div>
+
+        {summaryText && (
+          <div className="bg-black text-white p-3 rounded-xl text-sm animate-fade-in">
+            {summaryText}
+          </div>
+        )}
+
         <button
           onClick={() => {
-            if (window.confirm("Delete this group and all expenses?")) {
-              setGroup(null);
-              setExpenses([]);
-            }
+            setShowForm(!showForm);
+            setEditIndex(null);
           }}
-          className="text-sm text-gray-400 hover:text-red-500 transition"
+          className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 active:scale-95 transition"
         >
-          New group
+          {showForm ? "Cancel" : "+ Add Expense"}
         </button>
-      </div>
 
-      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10">
-
-        {/* LEFT */}
-        <div className="space-y-6">
-
-          {/* GROUP CARD */}
-          <div className="bg-white rounded-2xl shadow-sm border p-6">
-            <h2 className="text-xl font-semibold">{group.name}</h2>
-            <p className="text-sm text-gray-500 mb-4">{group.members.join(", ")}</p>
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-sm text-gray-500">Total</p>
-              <p className="text-2xl font-bold">${total.toFixed(2)}</p>
-            </div>
+        {showForm && (
+          <div className="bg-white p-4 rounded-xl shadow-sm animate-fade-in">
+            <ExpenseForm
+              key={editIndex ?? "new"}
+              members={group.members}
+              isEditing={editIndex !== null}
+              editData={editIndex !== null ? expenses[editIndex] : null}
+              onSubmit={handleExpenseSubmit}
+            />
           </div>
+        )}
 
-          {/* QUICK INSIGHT */}
-          {balances && expenses.length > 0 && (
-            <div className="bg-white border rounded-2xl p-5 shadow-sm">
-              <h3 className="text-sm text-gray-500 mb-3">Quick Insight</h3>
-              <div className="flex justify-between text-sm">
-                <div>
-                  <p className="text-gray-500">Top payer</p>
-                  <p className="font-semibold">{biggestCreditor?.[0]}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-gray-500">Owes most</p>
-                  <p className="font-semibold">{biggestDebtor?.[0]}</p>
-                </div>
+        {balances && <BalanceSummary balances={balances} />}
+
+        {balances && expenses.length > 0 && (
+          <div className="bg-white p-4 rounded-xl shadow-sm animate-fade-in">
+            <h3 className="font-semibold mb-2">Quick Insights</h3>
+            <p className="text-sm text-gray-600">
+              {biggestDebtor?.[0]} owes the most, while {biggestCreditor?.[0]} paid the most.
+            </p>
+          </div>
+        )}
+
+        {expenses.length === 0 ? (
+          <div className="text-center py-8 animate-fade-in">
+            <div className="text-3xl mb-2">💸</div>
+            <p>No expenses yet</p>
+          </div>
+        ) : (
+          expenses.map((exp, i) => (
+            <div
+              key={i}
+              className="flex justify-between items-center bg-white px-4 py-3 rounded-xl shadow-sm mb-2 animate-fade-in hover:shadow-md transition"
+            >
+              <div>
+                <p className="font-medium">{exp.description}</p>
+                <p className="text-xs text-gray-400">
+                  Paid by {exp.paidBy}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span>${Number(exp.amount).toFixed(2)}</span>
+
+                <button onClick={() => {
+                  setEditIndex(i);
+                  setShowForm(true);
+                }}>
+                  Edit
+                </button>
+
+                <button onClick={() => handleDelete(i)}>
+                  Delete
+                </button>
               </div>
             </div>
-          )}
+          ))
+        )}
 
-          {/* BALANCES */}
-          {balances && expenses.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border p-6">
-              <BalanceSummary balances={balances} />
-            </div>
-          )}
+        {settlements.length > 0 && (
+          <div className="bg-white p-4 rounded-xl shadow-sm animate-fade-in">
+            <h3 className="font-semibold mb-3">Settle Up</h3>
+            {settlements.map((s, i) => (
+              <div key={i} className="flex justify-between mb-2">
+                <span>{s.from} → {s.to}</span>
+                <span>${s.amount}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
-          {/* SETTLEMENTS */}
-          {settlements.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border p-6">
-              <h2 className="text-lg font-semibold mb-4">Who pays who</h2>
-              <ul className="space-y-2">
-                {settlements.map((s, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center justify-between p-3 bg-amber-50 border border-amber-100 rounded-xl"
-                  >
-                    <span className="text-sm text-gray-700">
-                      <span className="font-semibold">{s.from}</span> pays{" "}
-                      <span className="font-semibold">{s.to}</span>
-                    </span>
-                    <span className="text-sm font-bold text-amber-700">
-                      ${s.amount.toFixed(2)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* ADD / CLOSE BUTTON */}
-          <button
-            onClick={() => {
-              if (showForm) {
-                setShowForm(false);
-                setEditIndex(null);
-              } else {
-                setShowForm(true);
-              }
-            }}
-            className="w-full bg-black text-white py-3 rounded-xl hover:opacity-90 active:scale-95 transition"
-          >
-            {showForm ? "Close" : "+ Add Expense"}
-          </button>
-
-          {/* EXPENSE FORM */}
-          {showForm && (
-            <div className="bg-white rounded-2xl shadow-sm border p-6">
-              <ExpenseForm
-                key={editIndex ?? "new"}
-                members={group.members}
-                isEditing={editIndex !== null}
-                editData={editIndex !== null ? expenses[editIndex] : null}
-                onSubmit={handleExpenseSubmit}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT — EXPENSE HISTORY */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 h-fit">
-          <h2 className="text-lg font-semibold mb-4">Expense History</h2>
-
-          {expenses.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-lg font-medium text-gray-700">No expenses yet</p>
-              <p className="text-sm text-gray-500">Add your first expense</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {expenses.map((exp, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center p-3 rounded-lg hover:bg-gray-50"
-                >
-                  <div>
-                    <p className="font-medium">{exp.description}</p>
-                    <p className="text-xs text-gray-500">{exp.paidBy}</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <p className="font-semibold">${Number(exp.amount).toFixed(2)}</p>
-                    <button
-                      onClick={() => {
-                        setEditIndex(index);
-                        setShowForm(true);
-                      }}
-                      className="text-sm text-gray-400 hover:text-blue-500"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(index)}
-                      className="text-sm text-gray-400 hover:text-red-500"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
