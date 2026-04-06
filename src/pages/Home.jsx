@@ -37,7 +37,7 @@ export default function Home() {
     localStorage.setItem("expenses", JSON.stringify(expenses));
   }, [expenses]);
 
-  // ✅ Derived data (single source of truth)
+  // ✅ Derived data
   const balances = group
     ? calculateBalance(group.members, expenses)
     : null;
