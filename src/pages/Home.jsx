@@ -65,7 +65,7 @@ export default function Home() {
     if (totalOwed === 0) {
       summaryText = "Everyone is settled";
     } else if (biggestDebtor && biggestCreditor) {
-      summaryText = `${biggestDebtor[0]} owes the most (RON ${Math.abs(
+      summaryText = `${biggestDebtor[0]} owes the most ($${Math.abs(
         biggestDebtor[1]
       ).toFixed(2)})`;
     }
@@ -118,7 +118,7 @@ export default function Home() {
     setExpenses(expenses.filter((_, i) => i !== index));
   }
 
-  // 🟡 Create Group Screen
+  // Create Group Screen
   if (!group) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
@@ -152,7 +152,6 @@ export default function Home() {
     );
   }
 
-  // 🟢 Main App
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -163,16 +162,31 @@ export default function Home() {
           <h1 className="text-2xl font-bold">{group.name}</h1>
           <p className="text-sm text-gray-400">{group.members.join(", ")}</p>
 
-          {/* ✅ NEW SUMMARY BLOCK */}
+           {/* Summary */}
           <div className="bg-gray-50 p-3 rounded mt-3">
             <p className="font-semibold">
-              Total: RON {Number(total).toFixed(2)}
+              Total: ${Number(total).toFixed(2)}
             </p>
             <p className="text-sm text-gray-600">
-              Each person should pay: RON {Number(share).toFixed(2)}
+              Each person should pay: ${Number(share).toFixed(2)}
             </p>
           </div>
         </div>
+
+{/* Settlements */}
+        {settlements.length > 0 && (
+          <div className="bg-white p-4 rounded-xl shadow-sm">
+            <h3 className="font-semibold mb-3">Who pays who</h3>
+            {settlements.map((s, i) => (
+              <div key={i} className="flex justify-between mb-2">
+                <span>{s.from} pays {s.to}</span>
+                <span>${Number(s.amount).toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+         
 
         {summaryText && (
           <div className="bg-black text-white p-3 rounded-xl text-sm">
@@ -223,7 +237,7 @@ export default function Home() {
               </div>
 
               <div className="flex items-center gap-3">
-                <span>RON {Number(exp.amount).toFixed(2)}</span>
+                <span>${Number(exp.amount).toFixed(2)}</span>
 
                 <button onClick={() => {
                   setEditIndex(i);
@@ -240,18 +254,6 @@ export default function Home() {
           ))
         )}
 
-        {/* Settlements */}
-        {settlements.length > 0 && (
-          <div className="bg-white p-4 rounded-xl shadow-sm">
-            <h3 className="font-semibold mb-3">Settle Up</h3>
-            {settlements.map((s, i) => (
-              <div key={i} className="flex justify-between mb-2">
-                <span>{s.from} pays {s.to}</span>
-                <span>RON {Number(s.amount).toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-        )}
 
       </div>
     </div>
