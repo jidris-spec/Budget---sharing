@@ -28,11 +28,14 @@ SplitFlow removes that friction by automatically calculating balances and giving
 
 ## ✨ Features
 
-- Add and track shared expenses  
-- Automatic balance calculation  
-- Clear breakdown of who owes and who should receive  
-- Quick insight into top payer and biggest debtor  
-- Simple and intuitive UI  
+- Add, edit, and delete shared expenses
+- Automatic balance calculation
+- "Who pays who" settlement view with the minimal set of transactions needed to settle up
+- Clear breakdown of who owes and who should receive
+- Quick insight into top payer and biggest debtor
+- Member avatars with auto-generated colors
+- Light and dark mode, with your preference remembered across visits
+- Clean, responsive UI built with Tailwind CSS
 
 ---
 
@@ -40,25 +43,30 @@ SplitFlow removes that friction by automatically calculating balances and giving
 
 This project demonstrates:
 
-- State management with React  
-- Derived data (balances calculated from expenses)  
-- Dynamic UI updates based on user input  
-- LocalStorage persistence  
-- Clean component structure and reusable logic  
+- State management with React
+- Derived data (balances and settlements calculated from expenses)
+- A debt-settlement algorithm that minimizes the number of payments
+- Dynamic UI updates based on user input
+- LocalStorage persistence
+- Theming with Tailwind's class-based dark mode
+- Clean component structure and reusable logic
 
 ---
 
 ## 🛠 Tech Stack
 
-- React  
-- Tailwind CSS  
-- LocalStorage  
+- React
+- Vite
+- Tailwind CSS
+- LocalStorage
 
 ---
 
 ## 📸 Preview
 
-(Add a clean screenshot here)
+| Light | Dark |
+| --- | --- |
+| (Add a light mode screenshot here) | (Add a dark mode screenshot here) |
 
 ---
 
