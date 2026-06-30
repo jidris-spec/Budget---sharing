@@ -5,7 +5,7 @@ A simple tool to track shared expenses and instantly calculate who owes what —
 ---
 
 ## 🚀 Live Demo
-👉 https://budget-sharing-git-main-idris-projects-508cd8f1.vercel.app/
+👉 https://expenses-split.netlify.app/
 
 ---
 
